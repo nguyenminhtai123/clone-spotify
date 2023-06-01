@@ -13,6 +13,7 @@
     "@types/node": "20.2.3",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
+    "heroicons": "^2.0.18",
     "next": "13.4.3",
     "next-auth": "^4.22.1",
     "nvm": "^0.0.4",
