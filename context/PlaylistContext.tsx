@@ -51,7 +51,6 @@ const PlaylistContextProvider = ({ children }: playlistContextProviderProps) => 
         playlistContextState,
         updatePlaylistContextState,
     };
-
     return <PlaylistContext.Provider value={playlistContextProviderData}>{children}</PlaylistContext.Provider>;
 };
 
