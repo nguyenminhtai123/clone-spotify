@@ -9,10 +9,13 @@ interface playlistContextProviderProps {
 
 const defaultPlaylistContextState: PlaylistContextState = {
     playlists: [],
+    selectedPlaylistId: null,
+    selectedPlaylist: null,
 };
 
 export const PlaylistContext = createContext<IPlaylistContext>({
     playlistContextState: defaultPlaylistContextState,
+    updatePlaylistContextState: () => {},
 });
 
 export const usePlaylistContext = () => useContext(PlaylistContext);
@@ -24,10 +27,17 @@ const PlaylistContextProvider = ({ children }: playlistContextProviderProps) => 
 
     const [playlistContextState, setPlaylistContextState] = useState(defaultPlaylistContextState);
 
+    const updatePlaylistContextState = (updatedObj: Partial<PlaylistContextState>) => {
+        setPlaylistContextState((previousPlaylistContextState) => ({
+            ...previousPlaylistContextState,
+            ...updatedObj,
+        }));
+    };
+
     useEffect(() => {
         const getUserPlaylists = async () => {
             const userPlaylistResponse = await spotifyApi.getUserPlaylists();
-            setPlaylistContextState({
+            updatePlaylistContextState({
                 playlists: userPlaylistResponse.body.items,
             });
         };
@@ -39,6 +49,7 @@ const PlaylistContextProvider = ({ children }: playlistContextProviderProps) => 
 
     const playlistContextProviderData = {
         playlistContextState,
+        updatePlaylistContextState,
     };
 
     return <PlaylistContext.Provider value={playlistContextProviderData}>{children}</PlaylistContext.Provider>;
