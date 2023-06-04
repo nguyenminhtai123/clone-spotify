@@ -6,6 +6,11 @@ export enum TokenError {
     RefreshAccessTokenError = 'RefreshAccessTokenError',
 }
 
+export interface SessionExtend extends Session {
+    accessToken: string;
+    error: TokenError | undefined;
+}
+
 export interface ExtendedToken extends JWT {
     accessToken: string;
     refreshToken: string;
