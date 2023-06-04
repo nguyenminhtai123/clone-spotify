@@ -1,12 +1,12 @@
 import { SongContextState, SongReducerAction, SongReducerActionType } from '../types';
 
-export const songReducer = (state: SongContextState, { type, payload }: SongReducerAction) => {
+export const songReducer = (state: SongContextState, { type, payload }: SongReducerAction): SongContextState => {
     switch (type) {
         case SongReducerActionType.SetDevice:
             return {
                 ...state,
                 deviceId: payload.deviceId,
-                volumn: payload.volume,
+                volume: payload.volume,
             };
         case SongReducerActionType.ToggleIsPlaying:
             return {
@@ -21,6 +21,12 @@ export const songReducer = (state: SongContextState, { type, payload }: SongRedu
                 selectedSongId,
                 selectedSong,
                 isPlaying,
+            };
+
+        case SongReducerActionType.SetVolume:
+            return {
+                ...state,
+                volume: payload,
             };
 
         default:

@@ -1,3 +1,5 @@
+'use client';
+
 import {
     ArrowsRightLeftIcon,
     ArrowUturnLeftIcon,
@@ -8,7 +10,9 @@ import {
     ViewColumnsIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import React from 'react';
+import React, { ChangeEventHandler } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
+import { spotifyApi } from '../../config/spotify';
 import { useSongContext } from '../../context/SongContext';
 import useSpotify from '../../hooks/useSpotify';
 import { SongReducerActionType } from '../../types';
@@ -17,11 +21,9 @@ const Player = () => {
     const spotifyApi = useSpotify();
 
     const {
-        songContextState: { isPlaying, selectedSong, deviceId, volume },
+        songContextState: { selectedSong, isPlaying, deviceId, volume },
         dispatchSongAction,
     } = useSongContext();
-
-    console.log(selectedSong);
 
     const handlePlayPause = async () => {
         const response = await spotifyApi.getMyCurrentPlaybackState();
@@ -41,6 +43,43 @@ const Player = () => {
                 payload: true,
             });
         }
+    };
+
+    const handleSkipSong = async (skipTo: 'previous' | 'next') => {
+        if (!deviceId) return;
+
+        if (skipTo === 'previous') await spotifyApi.skipToPrevious();
+        else await spotifyApi.skipToNext();
+
+        const songInfo = await spotifyApi.getMyCurrentPlayingTrack();
+
+        if (!songInfo.body) return;
+
+        dispatchSongAction({
+            type: SongReducerActionType.SetCurrentPlayingSong,
+            payload: {
+                selectedSongId: songInfo.body.item?.id,
+                selectedSong: songInfo.body.item as SpotifyApi.TrackObjectFull,
+                isPlaying: songInfo.body.is_playing,
+            },
+        });
+    };
+
+    const debouncedAdjustVolume = useDebouncedCallback((volume: number) => {
+        spotifyApi.setVolume(volume);
+    }, 500);
+
+    const handleVolumeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
+        const volume = Number(e.target.value);
+
+        if (!deviceId) return;
+
+        debouncedAdjustVolume(volume);
+
+        dispatchSongAction({
+            type: SongReducerActionType.SetVolume,
+            payload: volume,
+        });
     };
 
     return (
@@ -68,19 +107,26 @@ const Player = () => {
             {/* Center */}
             <div className="flex justify-evenly items-center">
                 <ArrowsRightLeftIcon className="icon-playback" />
-                <BackwardIcon className="icon-playback" />
+                <BackwardIcon className="icon-playback" onClick={handleSkipSong.bind(this, 'previous')} />
                 {isPlaying ? (
                     <PauseIcon className="icon-playback" onClick={handlePlayPause} />
                 ) : (
                     <PlayIcon className="icon-playback" onClick={handlePlayPause} />
                 )}
-                <ForwardIcon className="icon-playback" />
+                <ForwardIcon className="icon-playback" onClick={handleSkipSong.bind(this, 'next')} />
                 <ArrowUturnLeftIcon className="icon-playback" />
             </div>
             {/* Right */}
             <div className="flex justify-end items-center pr-5 space-x-3 md:space-x-4">
                 <ViewColumnsIcon className="icon-playback" />
-                <input type="range" min={0} max={100} className="w-20 md:w-auto" />
+                <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    className="w-20 md:w-auto"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                />
             </div>
         </div>
     );

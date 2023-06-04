@@ -60,8 +60,6 @@ const SongContextProvider = ({ children }: songContextProviderProps) => {
 
             if (!songInfo.body) return;
 
-            console.log('SONG INFO', songInfo);
-
             dispatchSongAction({
                 type: SongReducerActionType.SetCurrentPlayingSong,
                 payload: {
@@ -73,7 +71,7 @@ const SongContextProvider = ({ children }: songContextProviderProps) => {
         };
 
         if (spotifyApi.getAccessToken()) {
-            getCurrentPlayingSong;
+            getCurrentPlayingSong();
         }
     }, [spotifyApi, session]);
 
