@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next';
 import { ClientSafeProvider, getProviders, signIn } from 'next-auth/react';
 import Image from 'next/image';
-import spotifyLogo from '../assets/spotify.png';
+import spotifyLogo from '../../src/assets/spotify-logo.png';
 
 interface Props {
     providers: Awaited<ReturnType<typeof getProviders>>;
