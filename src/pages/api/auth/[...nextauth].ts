@@ -1,26 +1,26 @@
-import { CallbacksOptions } from 'next-auth';
-import NextAuth from 'next-auth/next';
+import NextAuth, { CallbacksOptions } from 'next-auth';
 import SpotifyProvider from 'next-auth/providers/spotify';
 import { scopes, spotifyApi } from '../../../../config/spotify';
 import { ExtendedToken, SessionExtend, TokenError } from '../../../../types';
 
-const refreshAcsessToken = async (token: ExtendedToken): Promise<ExtendedToken> => {
+const refreshAccessToken = async (token: ExtendedToken): Promise<ExtendedToken> => {
     try {
         spotifyApi.setAccessToken(token.accessToken);
         spotifyApi.setRefreshToken(token.refreshToken);
-        // Hey, spotify, please refresh my access token
+
+        // "Hey Spotify, please refresh my access token"
         const { body: refreshedTokens } = await spotifyApi.refreshAccessToken();
 
-        console.log('refresh token are: ', refreshedTokens);
+        console.log('REFRESHED TOKENS ARE: ', refreshedTokens);
 
         return {
             ...token,
             accessToken: refreshedTokens.access_token,
-            refreshTokens: refreshedTokens.refresh_token || token.refreshToken,
-            accessTokenExpressAt: Date.now() + refreshedTokens.expires_in * 1000,
+            refreshToken: refreshedTokens.refresh_token || token.refreshToken,
+            accessTokenExpiresAt: Date.now() + refreshedTokens.expires_in * 1000,
         };
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.error(error);
 
         return {
             ...token,
@@ -39,22 +39,22 @@ const jwtCallback: CallbacksOptions['jwt'] = async ({ token, account, user }) =>
             user,
             accessToken: account.access_token as string,
             refreshToken: account.refresh_token as string,
-            accessTokenExpiresAt: (account.expires_at as number) * 1000,
+            accessTokenExpiresAt: (account.expires_at as number) * 1000, // converted to ms
         };
 
-        console.log('first time login, extended token: ', extendedToken);
+        console.log('FIRST TIME LOGIN, EXTENDED TOKEN: ', extendedToken);
         return extendedToken;
     }
 
     // Subsequent requests to check auth sessions
     if (Date.now() + 5000 < (token as ExtendedToken).accessTokenExpiresAt) {
-        console.log('ACESS TOKEN STILL Valid, retuenning extended token: ', token);
+        console.log('ACCESS TOKEN STILL VALID, RETURNING EXTENDED TOKEN: ', token);
         return token;
     }
 
     // Access token has expired, refresh it
-    console.log('Access token has expired, refreshing...');
-    return await refreshAcsessToken(token as ExtendedToken);
+    console.log('ACCESS TOKEN EXPIRED, REFRESHING...');
+    return await refreshAccessToken(token as ExtendedToken);
 };
 
 const sessionCallback: CallbacksOptions['session'] = async ({ session, token }) => {

@@ -1,7 +1,7 @@
 import { GetServerSideProps } from 'next';
 import { ClientSafeProvider, getProviders, signIn } from 'next-auth/react';
 import Image from 'next/image';
-import spotifyLogo from '../../src/assets/spotify-logo.png';
+import spotifyLogo from '../assets/spotify.png';
 
 interface Props {
     providers: Awaited<ReturnType<typeof getProviders>>;
@@ -9,6 +9,7 @@ interface Props {
 
 const Login = ({ providers }: Props) => {
     const { name: providerName, id: providerId } = providers?.spotify as ClientSafeProvider;
+
     return (
         <div className="flex flex-col justify-center items-center bg-black h-screen">
             <div className="mb-6">
@@ -21,7 +22,7 @@ const Login = ({ providers }: Props) => {
                     signIn(providerId, { callbackUrl: '/' });
                 }}
             >
-                login with {providerName}
+                Login with {providerName}
             </button>
         </div>
     );
